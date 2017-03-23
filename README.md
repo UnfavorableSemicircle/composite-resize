@@ -1,6 +1,6 @@
 # composite-resize
 
-A GUI app to adjust the width of a composite without having to resize it.
+A GUI app to adjust the width of a composite without having to recreate it.
 
 You will need Python 3, tkinter (included with Windows Python installations), and pillow.
 
