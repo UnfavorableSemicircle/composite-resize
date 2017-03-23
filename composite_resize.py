@@ -13,6 +13,7 @@ class CompositeResizeApp:
         
         root.title("Composite resize")
         # fix entry box issue
+        # as a side-effect this may create the window without a frame
         root.overrideredirect(True)
 
         frame = Frame(root)
@@ -74,6 +75,7 @@ class CompositeResizeApp:
 
 if __name__ == "__main__":
     root = Tk()
+    # move the window to the top right corner
     root.geometry('+0+0')
     
     file = filedialog.askopenfile(title="Choose an image...")
