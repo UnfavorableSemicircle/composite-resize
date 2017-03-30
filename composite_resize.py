@@ -5,26 +5,9 @@ from PIL import Image, ImageTk
 import math
 
 def modePixelSize(mode):
-    if mode == "L":
-        return 1
-    if mode == "P":
-        return 1
-    if mode == "RGB":
-        return 3
-    if mode == "RGBA":
-        return 4
-    if mode == "CMYK":
-        return 4
-    if mode == "YCbCr":
-        return 3
-    if mode == "LAB":
-        return 3
-    if mode == "HSV":
-        return 3
-    if mode == "I":
-        return 4
-    if mode == "F":
-        return 4
+    modeSizes = {"L": 1, "P": 1, "RGB": 3, "RGBA": 4, "CMYK": 4, "YCbCr": 3,
+                 "LAB": 3, "HSV": 3, "I": 4, "F": 4}
+    return modeSizes[mode]
 
 class CompositeResizeApp:
 
