@@ -57,12 +57,23 @@ class CompositeResizeApp:
 
         self._updateImage()
 
-    def _loadButtonClicked(self):
+    def _chooseImage(self):
         file = filedialog.askopenfile(title="Choose an image...")
         if file == None:
-            return
+            return None
 
-        image = Image.open(file.name)
+        try:
+            image = Image.open(file.name)
+        except BaseException as e:
+            messagebox.showerror("Error reading image!", str(e))
+            return None
+        return image
+
+    def _loadButtonClicked(self):
+        image = self._chooseImage()
+        if image == None:
+            return
+        
         self.imageData = image.tobytes()
         self.numPixels = image.width * image.height
         self.imageMode = image.mode
@@ -72,11 +83,10 @@ class CompositeResizeApp:
         self._updateImage()
 
     def _appendButtonClicked(self):
-        file = filedialog.askopenfile(title="Choose an image to append...")
-        if file == None:
+        image = self._chooseImage()
+        if image == None:
             return
-
-        image = Image.open(file.name)
+        
         self.imageData += image.tobytes()
         self.numPixels += image.width * image.height
         if self.imageMode != image.mode:
@@ -115,7 +125,13 @@ class CompositeResizeApp:
         file = filedialog.asksaveasfile()
         if file == None:
             return
-        self.image.save(file.name)
+        try:
+            try:
+                self.image.save(file.name)
+            except KeyError as e:
+                self.image.save(file.name + ".png")
+        except BaseException as e:
+            messagebox.showerror("Error saving image!", str(e))
 
 if __name__ == "__main__":
     root = Tk()
