@@ -4,6 +4,28 @@ from tkinter import messagebox
 from PIL import Image, ImageTk
 import math
 
+def modePixelSize(mode):
+    if mode == "L":
+        return 1
+    if mode == "P":
+        return 1
+    if mode == "RGB":
+        return 3
+    if mode == "RGBA":
+        return 4
+    if mode == "CMYK":
+        return 4
+    if mode == "YCbCr":
+        return 3
+    if mode == "LAB":
+        return 3
+    if mode == "HSV":
+        return 3
+    if mode == "I":
+        return 4
+    if mode == "F":
+        return 4
+
 class CompositeResizeApp:
 
     def __init__(self, root):
@@ -122,7 +144,7 @@ class CompositeResizeApp:
             return
         
         try:
-            width = int(self.widthBox.get())
+            width = float(self.widthBox.get())
         except BaseException:
             self._updateWidthBox()
             return
@@ -130,8 +152,35 @@ class CompositeResizeApp:
             self._updateWidthBox()
             return
         height = int(math.floor(float(self.numPixels) / float(width)))
-        self.image = Image.frombytes(self.imageMode, (width, height),
-                                     self.imageData)
+        if width % 1.0 == 0.0:
+            width = int(width)
+            self.image = Image.frombytes(self.imageMode, (width, height),
+                                         self.imageData)
+        else:
+            # width is a fraction
+            widthError = 0
+            x = 0
+            y = 0
+            newImageBytes = bytes()
+            i = 0
+            pixelBytes = modePixelSize(self.imageMode)
+            while i < self.numPixels:
+                addedPixels = int(math.floor(width))
+                if widthError > 1:
+                    addedPixels += 1
+                    widthError -= 1
+                widthError += width % 1.0
+                nextI = i + addedPixels
+                if nextI > self.numPixels:
+                    nextI = self.numPixels
+                newImageBytes += self.imageData[i*pixelBytes : nextI*pixelBytes]
+                missedPixels = int(math.ceil(width)) - addedPixels
+                newImageBytes += \
+                    bytes([0 for i in range(0, missedPixels*pixelBytes)])
+                i = nextI
+            self.image = Image.frombytes(self.imageMode,
+                                         (math.ceil(width), height),
+                                         newImageBytes)
         
         self.imageCanvas.delete("all")
         self.imageCanvas.config(width=self.image.width,
