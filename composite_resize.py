@@ -58,6 +58,7 @@ class CompositeResizeApp:
         widthLabel.pack(side=LEFT)
         self.widthBox = Spinbox(widthFrame, from_=0, to=65536)
         self.widthBox.pack(side=LEFT)
+        self.widthBox.bind('<Return>', self._updateImageEvent)
         self._updateWidthBox()
 
         self.updateButton = Button(widthFrame, text="Update",
@@ -135,6 +136,9 @@ class CompositeResizeApp:
                 "Warning!",
                 "Appended image mode (" + image.mode + ") doesn't match "
                 "existing image mode (" + self.imageMode + ")")
+        self._updateImage()
+
+    def _updateImageEvent(self, event):
         self._updateImage()
 
     def _updateImage(self):
