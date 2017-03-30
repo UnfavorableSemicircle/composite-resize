@@ -159,8 +159,6 @@ class CompositeResizeApp:
         else:
             # width is a fraction
             widthError = 0
-            x = 0
-            y = 0
             newImageBytes = bytes()
             i = 0
             pixelBytes = modePixelSize(self.imageMode)
