@@ -7,6 +7,7 @@ import math
 class CompositeResizeApp:
 
     def __init__(self, root):
+        self.image = None
         self.imageData = bytes()
         self.numPixels = 0
         self.imageMode = None
@@ -26,24 +27,24 @@ class CompositeResizeApp:
         loadButton = Button(widthFrame, text="Load Image",
                             command=self._loadButtonClicked)
         loadButton.pack(side=LEFT)
-        appendButton = Button(widthFrame, text="Append Image",
-                              command=self._appendButtonClicked)
-        appendButton.pack(side=LEFT)
+        
+        self.appendButton = Button(widthFrame, text="Append Image",
+                                   command=self._appendButtonClicked)
+        self.appendButton.pack(side=LEFT)
         
         widthLabel = Label(widthFrame, text="Width: ")
         widthLabel.pack(side=LEFT)
         self.widthBox = Spinbox(widthFrame, from_=0, to=65536)
         self.widthBox.pack(side=LEFT)
-        self.widthBox.delete(0, END)
-        self.widthBox.insert(INSERT, str(self.width))
+        self._updateWidthBox()
 
-        updateButton = Button(widthFrame, text="Update",
-                              command=self._updateImage)
-        updateButton.pack(side=LEFT)
+        self.updateButton = Button(widthFrame, text="Update",
+                                   command=self._updateImage)
+        self.updateButton.pack(side=LEFT)
 
-        saveButton = Button(widthFrame, text="Save",
-                            command=self._saveImage)
-        saveButton.pack(side=LEFT)
+        self.saveButton = Button(widthFrame, text="Save",
+                                 command=self._saveImage)
+        self.saveButton.pack(side=LEFT)
 
         #quitButton = Button(widthFrame, text="Quit", command=exit)
         #quitButton.pack(side=LEFT)
@@ -56,6 +57,25 @@ class CompositeResizeApp:
         frame.pack()
 
         self._updateImage()
+
+    def _enableInterface(self):
+        self.appendButton.config(state=NORMAL)
+        self.widthBox.config(state=NORMAL)
+        self.updateButton.config(state=NORMAL)
+        self.saveButton.config(state=NORMAL)
+
+    def _disableInterface(self):
+        self.appendButton.config(state=DISABLED)
+        self.widthBox.config(state=DISABLED)
+        self.updateButton.config(state=DISABLED)
+        self.saveButton.config(state=DISABLED)
+
+    def _updateWidthBox(self):
+        prevState = self.widthBox['state']
+        self.widthBox.config(state=NORMAL) # must be enabled to change value
+        self.widthBox.delete(0, END)
+        self.widthBox.insert(INSERT, str(self.width))
+        self.widthBox.config(state=prevState)
 
     def _chooseImage(self):
         file = filedialog.askopenfile(title="Choose an image...")
@@ -78,8 +98,7 @@ class CompositeResizeApp:
         self.numPixels = image.width * image.height
         self.imageMode = image.mode
         self.width = image.width
-        self.widthBox.delete(0, END)
-        self.widthBox.insert(INSERT, str(self.width))
+        self._updateWidthBox()
         self._updateImage()
 
     def _appendButtonClicked(self):
@@ -98,14 +117,17 @@ class CompositeResizeApp:
 
     def _updateImage(self):
         if len(self.imageData) == 0:
+            self._disableInterface()
             self.imageCanvas.delete("all")
             return
         
         try:
             width = int(self.widthBox.get())
         except BaseException:
-            self.widthBox.delete(0, END)
-            self.widthBox.insert(INSERT, str(self.width))
+            self._updateWidthBox()
+            return
+        if width <= 0:
+            self._updateWidthBox()
             return
         height = int(math.floor(float(self.numPixels) / float(width)))
         self.image = Image.frombytes(self.imageMode, (width, height),
@@ -120,6 +142,8 @@ class CompositeResizeApp:
         self.imageCanvas.update()
 
         self.width = width
+
+        self._enableInterface()
 
     def _saveImage(self):
         file = filedialog.asksaveasfile()
