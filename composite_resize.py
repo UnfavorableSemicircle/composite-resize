@@ -1,24 +1,34 @@
 from tkinter import *
 from tkinter import filedialog
+from tkinter import messagebox
 from PIL import Image, ImageTk
 import math
 
 class CompositeResizeApp:
 
-    def __init__(self, root, image):
-        self.imageData = image.tobytes()
-        self.numPixels = image.width * image.height
-        self.imageMode = image.mode
-        self.width = image.width
+    def __init__(self, root):
+        self.imageData = bytes()
+        self.numPixels = 0
+        self.imageMode = None
+        self.width = 0
         
         root.title("Composite resize")
-        # fix entry box issue
-        # as a side-effect this may create the window without a frame
-        root.overrideredirect(True)
+        # uncomment to fix entry box issue (unable to select)
+        # usually switching to another window (including the open dialog) will
+        # fix this.
+        # as a side-effect this line may create the window without a frame
+        # root.overrideredirect(True)
 
         frame = Frame(root)
 
         widthFrame = Frame(frame)
+
+        loadButton = Button(widthFrame, text="Load Image",
+                            command=self._loadButtonClicked)
+        loadButton.pack(side=LEFT)
+        appendButton = Button(widthFrame, text="Append Image",
+                              command=self._appendButtonClicked)
+        appendButton.pack(side=LEFT)
         
         widthLabel = Label(widthFrame, text="Width: ")
         widthLabel.pack(side=LEFT)
@@ -35,8 +45,8 @@ class CompositeResizeApp:
                             command=self._saveImage)
         saveButton.pack(side=LEFT)
 
-        quitButton = Button(widthFrame, text="Quit", command=exit)
-        quitButton.pack(side=LEFT)
+        #quitButton = Button(widthFrame, text="Quit", command=exit)
+        #quitButton.pack(side=LEFT)
         
         widthFrame.pack(side=TOP, fill="x")
 
@@ -47,7 +57,40 @@ class CompositeResizeApp:
 
         self._updateImage()
 
+    def _loadButtonClicked(self):
+        file = filedialog.askopenfile(title="Choose an image...")
+        if file == None:
+            return
+
+        image = Image.open(file.name)
+        self.imageData = image.tobytes()
+        self.numPixels = image.width * image.height
+        self.imageMode = image.mode
+        self.width = image.width
+        self.widthBox.delete(0, END)
+        self.widthBox.insert(INSERT, str(self.width))
+        self._updateImage()
+
+    def _appendButtonClicked(self):
+        file = filedialog.askopenfile(title="Choose an image to append...")
+        if file == None:
+            return
+
+        image = Image.open(file.name)
+        self.imageData += image.tobytes()
+        self.numPixels += image.width * image.height
+        if self.imageMode != image.mode:
+            messagebox.showerror(
+                "Warning!",
+                "Appended image mode (" + image.mode + ") doesn't match "
+                "existing image mode (" + self.imageMode + ")")
+        self._updateImage()
+
     def _updateImage(self):
+        if len(self.imageData) == 0:
+            self.imageCanvas.delete("all")
+            return
+        
         try:
             width = int(self.widthBox.get())
         except BaseException:
@@ -59,7 +102,8 @@ class CompositeResizeApp:
                                      self.imageData)
         
         self.imageCanvas.delete("all")
-        self.imageCanvas.config(width=image.width, height=image.height)
+        self.imageCanvas.config(width=self.image.width,
+                                height=self.image.height)
         self.photoImage = ImageTk.PhotoImage(self.image)
         self.imageSprite = self.imageCanvas.create_image(
             self.image.width/2, self.image.height/2, image=self.photoImage)
@@ -78,11 +122,5 @@ if __name__ == "__main__":
     # move the window to the top right corner
     root.geometry('+0+0')
     
-    file = filedialog.askopenfile(title="Choose an image...")
-    if file == None:
-        exit()
-
-    image = Image.open(file.name)
-    
-    app = CompositeResizeApp(root, image)
+    app = CompositeResizeApp(root)
     root.mainloop()

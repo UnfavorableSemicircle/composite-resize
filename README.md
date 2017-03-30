@@ -1,9 +1,10 @@
 # composite-resize
 
-A GUI app to adjust the width of a composite without having to recreate it.
+A GUI app to adjust the width of a composite or to join multiple composites together.
 
 You will need Python 3, tkinter (included with Windows Python installations), and pillow.
 
-There may be an issue that causes the window to be created without a frame. It will still work.
-
-When you save the image, you must specify an extension.
+- Click `Load Image` to load a new composite image.
+- Click `Append Image` to append the data from another composite image to the existing data.
+- Adjust the width and click `Update` to resize the composite.
+- Click `Save` to save the final image. You must specify an extension.
