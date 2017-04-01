@@ -81,6 +81,7 @@ class CompositeResizeApp:
 
     def _enableInterface(self):
         self.appendButton.config(state=NORMAL)
+        self.trimButton.config(state=NORMAL)
         self.widthBox.config(state=NORMAL)
         self.paddingBox.config(state=NORMAL)
         self.updateButton.config(state=NORMAL)
@@ -88,6 +89,7 @@ class CompositeResizeApp:
 
     def _disableInterface(self):
         self.appendButton.config(state=DISABLED)
+        self.trimButton.config(state=DISABLED)
         self.widthBox.config(state=DISABLED)
         self.paddingBox.config(state=DISABLED)
         self.updateButton.config(state=DISABLED)
