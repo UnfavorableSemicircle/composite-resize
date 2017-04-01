@@ -186,8 +186,10 @@ class CompositeResizeApp:
             width = float(self.widthBox.get())
         except BaseException:
             self._updateWidthBox()
+            width = self.width
         if width <= 0:
             self._updateWidthBox()
+            width = self.width
 
         try:
             padding = int(self.paddingBox.get())
