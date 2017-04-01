@@ -263,13 +263,16 @@ class CompositeResizeApp:
         if image == None:
             return
         
-        self.imageData += image.tobytes()
-        self.numPixels += image.width * image.height
         if self.imageMode != image.mode:
             messagebox.showerror(
                 "Warning!",
-                "Appended image mode (" + image.mode + ") doesn't match "
-                "existing image mode (" + self.imageMode + ")")
+                "The mode of the image you selected (" + image.mode + ") "
+                "doesn't match the existing image mode "
+                "(" + self.imageMode + "). The image will be converted to "
+                + self.imageMode)
+            image = image.convert(self.imageMode)
+        self.imageData += image.tobytes()
+        self.numPixels += image.width * image.height
         self._updateImage()
 
     def _updateImageEvent(self, event):
