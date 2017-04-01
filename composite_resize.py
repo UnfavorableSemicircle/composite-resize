@@ -34,49 +34,67 @@ class CompositeResizeApp:
 
         loadButton = Button(toolbar, text="Load Image",
                             command=self._loadButtonClicked)
-        loadButton.pack(side=LEFT)
+        loadButton.pack(side=TOP, fill=X)
         
         self.appendButton = Button(toolbar, text="Append Image",
                                    command=self._appendButtonClicked)
-        self.appendButton.pack(side=LEFT)
+        self.appendButton.pack(side=TOP, fill=X)
+
+        self._makeDividerFrame(toolbar)
 
         self.trimButton = Button(toolbar, text="Trim End",
                                  command=self._trimEnd)
-        self.trimButton.pack(side=LEFT)
+        self.trimButton.pack(side=TOP, fill=X)
 
-        paddingLabel = Label(toolbar, text="Padding: ")
+        self._makeDividerFrame(toolbar)
+
+        paddingFrame = Frame(toolbar)
+        paddingLabel = Label(paddingFrame, text="Padding:")
         paddingLabel.pack(side=LEFT)
-        self.paddingBox = Spinbox(toolbar, from_=0, to=65536)
-        self.paddingBox.pack(side=LEFT)
+        self.paddingBox = Spinbox(paddingFrame, from_=0, to=65536, width=8)
+        self.paddingBox.pack(side=LEFT, fill=X)
+        paddingFrame.pack(side=TOP, fill=X)
         self.paddingBox.bind('<Return>', self._updateImageEvent)
         self._clearPaddingBox()
-        
-        widthLabel = Label(toolbar, text="Width: ")
-        widthLabel.pack(side=LEFT)
-        self.widthBox = Spinbox(toolbar, from_=0, to=65536)
+
+        widthFrame = Frame(toolbar)
+        widthLabel = Label(widthFrame, text="Width:")
+        widthLabel.pack(side=LEFT, fill=X, expand=True)
+        self.widthBox = Spinbox(widthFrame, from_=0, to=65536, width=8)
         self.widthBox.pack(side=LEFT)
+        widthFrame.pack(side=TOP, fill=X)
         self.widthBox.bind('<Return>', self._updateImageEvent)
         self._updateWidthBox()
 
         self.updateButton = Button(toolbar, text="Update",
                                    command=self._updateImage)
-        self.updateButton.pack(side=LEFT)
+        self.updateButton.pack(side=TOP, fill=X)
+
+        self._makeDividerFrame(toolbar)
 
         self.saveButton = Button(toolbar, text="Save",
                                  command=self._saveImage)
-        self.saveButton.pack(side=LEFT)
+        self.saveButton.pack(side=TOP, fill=X)
 
         #quitButton = Button(toolbar, text="Quit", command=exit)
-        #quitButton.pack(side=LEFT)
+        #quitButton.pack(side=TOP, fill=X)
         
-        toolbar.pack(side=TOP, fill="x")
+        toolbar.pack(side=LEFT, fill=Y)
 
         self.imageCanvas = Canvas(frame)
-        self.imageCanvas.pack(side=TOP)
+        self.imageCanvas.pack(side=LEFT)
 
         frame.pack()
 
         self._updateImage()
+
+    def _makeDividerFrame(self, root):
+        padTop = Frame(root, height=4)
+        padTop.pack(side=TOP, fill=X)
+        divider = Frame(root, relief=GROOVE, borderwidth=2, height=2)
+        divider.pack(side=TOP, fill=X)
+        padBottom = Frame(root, height=4)
+        padBottom.pack(side=TOP, fill=X)
 
     def _enableInterface(self):
         self.appendButton.config(state=NORMAL)
