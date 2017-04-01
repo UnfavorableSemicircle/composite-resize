@@ -49,8 +49,7 @@ class CompositeResizeApp:
         self.paddingBox = Spinbox(toolbar, from_=0, to=65536)
         self.paddingBox.pack(side=LEFT)
         self.paddingBox.bind('<Return>', self._updateImageEvent)
-        self.paddingBox.delete(0, END)
-        self.paddingBox.insert(INSERT, '0')
+        self._clearPaddingBox()
         
         widthLabel = Label(toolbar, text="Width: ")
         widthLabel.pack(side=LEFT)
@@ -126,6 +125,13 @@ class CompositeResizeApp:
         self.widthBox.insert(INSERT, str(self.width))
         self.widthBox.config(state=prevState)
 
+    def _clearPaddingBox(self):
+        prevState = self.paddingBox['state']
+        self.paddingBox.config(state=NORMAL) # must be enabled to change value
+        self.paddingBox.delete(0, END)
+        self.paddingBox.insert(INSERT, '0')
+        self.paddingBox.config(state=prevState)
+
     def _chooseImage(self):
         file = filedialog.askopenfile(title="Choose an image...")
         if file == None:
@@ -142,11 +148,12 @@ class CompositeResizeApp:
         image = self._chooseImage()
         if image == None:
             return
-        
+
         self.imageData = image.tobytes()
         self.numPixels = image.width * image.height
         self.imageMode = image.mode
         self.width = image.width
+        self._clearPaddingBox()
         self._updateWidthBox()
         self._updateImage()
 
@@ -183,12 +190,10 @@ class CompositeResizeApp:
         try:
             padding = int(self.paddingBox.get())
         except BaseException:
-            self.paddingBox.delete(0, END)
-            self.paddingBox.insert(INSERT, '0')
+            self._clearPaddingBox()
             padding = 0
         if padding <= 0:
-            self.paddingBox.delete(0, END)
-            self.paddingBox.insert(INSERT, '0')
+            self._clearPaddingBox()
             padding = 0
         
         pixelBytes = modePixelSize(self.imageMode)
