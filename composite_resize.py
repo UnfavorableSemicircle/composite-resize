@@ -221,7 +221,8 @@ class CompositeResizeApp:
                 i = nextI
 
         imageData = emptyBytes(padding * pixelBytes) + imageData
-        height = int(math.ceil(float(len(imageData)) / pixelBytes / width))
+        height = int(math.ceil(
+            float(len(imageData)) / pixelBytes / math.ceil(width)))
         imageData += emptyBytes(math.ceil(width) * pixelBytes)
         self.image = Image.frombytes(self.imageMode,
                                      (int(math.ceil(width)), height),
