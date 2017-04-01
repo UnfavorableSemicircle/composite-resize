@@ -263,8 +263,6 @@ class CompositeResizeApp:
 
 if __name__ == "__main__":
     root = Tk()
-    # move the window to the top right corner
-    root.geometry('+0+0')
     
     app = CompositeResizeApp(root)
     root.mainloop()
