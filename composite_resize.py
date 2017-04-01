@@ -154,14 +154,14 @@ class CompositeResizeApp:
         valid = True
         try:
             pixels = int(self.pixelsBox.get())
+            if pixels < 0:
+                valid = False
         except BaseException:
-            valid = False
-        if pixels <= 0:
             valid = False
 
         if not valid:
             self.pixelsBox.delete(0, END)
-            self.pixelsBox.insert(INSERT, widthStr)
+            self.pixelsBox.insert(INSERT, '0')
             return 0
         else:
             return pixels
@@ -298,7 +298,7 @@ class CompositeResizeApp:
         except BaseException:
             self._clearPaddingBox()
             padding = 0
-        if padding <= 0:
+        if padding < 0:
             self._clearPaddingBox()
             padding = 0
         
