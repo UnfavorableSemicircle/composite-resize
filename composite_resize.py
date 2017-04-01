@@ -99,6 +99,8 @@ class CompositeResizeApp:
         i = self.numPixels - 1
         while i >= 0:
             pixels = self.imageData[i*pixelSize:(i+1)*pixelSize]
+            if self.imageMode == 'RGBA':
+                pixels = pixels[:3] # ignore alpha
             black = True
             for pixel in pixels:
                 if pixel != 0:
