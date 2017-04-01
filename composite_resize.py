@@ -81,10 +81,24 @@ class CompositeResizeApp:
         
         toolbar.pack(side=LEFT, fill=Y)
 
-        self.imageCanvas = Canvas(frame)
-        self.imageCanvas.pack(side=LEFT)
+        imageFrame = Frame(frame)
 
-        frame.pack()
+        xScroll = Scrollbar(imageFrame, orient=HORIZONTAL)
+        xScroll.pack(side=BOTTOM, fill=X)
+        yScroll = Scrollbar(imageFrame, orient=VERTICAL)
+        yScroll.pack(side=RIGHT, fill=Y)
+
+        self.imageCanvas = Canvas(imageFrame,
+                                  xscrollcommand=xScroll.set,
+                                  yscrollcommand=yScroll.set)
+        self.imageCanvas.pack(side=LEFT, fill=BOTH, expand=True)
+
+        xScroll.config(command=self.imageCanvas.xview)
+        yScroll.config(command=self.imageCanvas.yview)
+
+        imageFrame.pack(side=LEFT, fill=BOTH, expand=True)
+
+        frame.pack(fill=BOTH, expand=True)
 
         root.bind('<Return>', self._updateImageEvent)
 
@@ -256,8 +270,11 @@ class CompositeResizeApp:
                                      imageData)
         
         self.imageCanvas.delete("all")
-        self.imageCanvas.config(width=self.image.width + 4,
-                                height=self.image.height + 4)
+        canvasWidth = self.image.width + 4
+        canvasHeight = self.image.height + 4
+        self.imageCanvas.config(width=canvasWidth,
+                                height=canvasHeight,
+                                scrollregion=(0,0,canvasWidth,canvasHeight))
         self.photoImage = ImageTk.PhotoImage(self.image)
         self.imageSprite = self.imageCanvas.create_image(
             self.image.width/2 + 2,
