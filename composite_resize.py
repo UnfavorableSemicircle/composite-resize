@@ -121,10 +121,15 @@ class CompositeResizeApp:
                 "Trimmed " + str(pixelsTrimmed) + " pixels")
 
     def _updateWidthBox(self):
+        if self.width % 1.0 == 0.0:
+            widthStr = str(int(self.width))
+        else:
+            widthStr = str(self.width)
+        
         prevState = self.widthBox['state']
         self.widthBox.config(state=NORMAL) # must be enabled to change value
         self.widthBox.delete(0, END)
-        self.widthBox.insert(INSERT, str(self.width))
+        self.widthBox.insert(INSERT, widthStr)
         self.widthBox.config(state=prevState)
 
     def _clearPaddingBox(self):
