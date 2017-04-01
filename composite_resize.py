@@ -9,6 +9,9 @@ def modePixelSize(mode):
                  "LAB": 3, "HSV": 3, "I": 4, "F": 4}
     return modeSizes[mode]
 
+def emptyBytes(length):
+    return bytes([0 for i in range(0, int(length))])
+
 class CompositeResizeApp:
 
     def __init__(self, root):
@@ -36,6 +39,14 @@ class CompositeResizeApp:
         self.appendButton = Button(widthFrame, text="Append Image",
                                    command=self._appendButtonClicked)
         self.appendButton.pack(side=LEFT)
+
+        paddingLabel = Label(widthFrame, text="Padding: ")
+        paddingLabel.pack(side=LEFT)
+        self.paddingBox = Spinbox(widthFrame, from_=0, to=65536)
+        self.paddingBox.pack(side=LEFT)
+        self.paddingBox.bind('<Return>', self._updateImageEvent)
+        self.paddingBox.delete(0, END)
+        self.paddingBox.insert(INSERT, '0')
         
         widthLabel = Label(widthFrame, text="Width: ")
         widthLabel.pack(side=LEFT)
@@ -67,12 +78,14 @@ class CompositeResizeApp:
     def _enableInterface(self):
         self.appendButton.config(state=NORMAL)
         self.widthBox.config(state=NORMAL)
+        self.paddingBox.config(state=NORMAL)
         self.updateButton.config(state=NORMAL)
         self.saveButton.config(state=NORMAL)
 
     def _disableInterface(self):
         self.appendButton.config(state=DISABLED)
         self.widthBox.config(state=DISABLED)
+        self.paddingBox.config(state=DISABLED)
         self.updateButton.config(state=DISABLED)
         self.saveButton.config(state=DISABLED)
 
@@ -134,21 +147,30 @@ class CompositeResizeApp:
             width = float(self.widthBox.get())
         except BaseException:
             self._updateWidthBox()
-            return
         if width <= 0:
             self._updateWidthBox()
-            return
-        height = int(math.floor(float(self.numPixels) / float(width)))
+
+        try:
+            padding = int(self.paddingBox.get())
+        except BaseException:
+            self.paddingBox.delete(0, END)
+            self.paddingBox.insert(INSERT, '0')
+            padding = 0
+        if padding <= 0:
+            self.paddingBox.delete(0, END)
+            self.paddingBox.insert(INSERT, '0')
+            padding = 0
+
+        print("updating image")
+        
+        pixelBytes = modePixelSize(self.imageMode)
         if width % 1.0 == 0.0:
-            width = int(width)
-            self.image = Image.frombytes(self.imageMode, (width, height),
-                                         self.imageData)
+            imageData = self.imageData
         else:
             # width is a fraction
             widthError = 0
-            newImageBytes = bytes()
+            imageData = bytes()
             i = 0
-            pixelBytes = modePixelSize(self.imageMode)
             while i < self.numPixels:
                 addedPixels = int(math.floor(width))
                 if widthError > 1:
@@ -158,14 +180,17 @@ class CompositeResizeApp:
                 nextI = i + addedPixels
                 if nextI > self.numPixels:
                     nextI = self.numPixels
-                newImageBytes += self.imageData[i*pixelBytes : nextI*pixelBytes]
+                imageData += self.imageData[i*pixelBytes : nextI*pixelBytes]
                 missedPixels = int(math.ceil(width)) - addedPixels
-                newImageBytes += \
-                    bytes([0 for i in range(0, missedPixels*pixelBytes)])
+                imageData += emptyBytes(missedPixels*pixelBytes)
                 i = nextI
-            self.image = Image.frombytes(self.imageMode,
-                                         (math.ceil(width), height),
-                                         newImageBytes)
+
+        imageData = emptyBytes(padding * pixelBytes) + imageData
+        height = int(math.ceil(float(len(imageData)) / pixelBytes / width))
+        imageData += emptyBytes(math.ceil(width) * pixelBytes)
+        self.image = Image.frombytes(self.imageMode,
+                                     (int(math.ceil(width)), height),
+                                     imageData)
         
         self.imageCanvas.delete("all")
         self.imageCanvas.config(width=self.image.width,
