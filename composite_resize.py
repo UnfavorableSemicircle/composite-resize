@@ -42,7 +42,23 @@ class CompositeResizeApp:
 
         self._makeDividerFrame(toolbar)
 
-        self.trimButton = Button(toolbar, text="Trim End",
+        pixelsFrame = Frame(toolbar)
+        pixelsLabel = Label(pixelsFrame, text="Pixels:")
+        pixelsLabel.pack(side=LEFT, fill=X, expand=True)
+        self.pixelsBox = Spinbox(pixelsFrame, from_=0, to=65536, width=8)
+        self.pixelsBox.pack(side=LEFT)
+        pixelsFrame.pack(side=TOP, fill=X)
+
+        insertRemoveFrame = Frame(toolbar)
+        self.insertButton = Button(insertRemoveFrame, text="Insert",
+                                   command=self._insertPixels)
+        self.insertButton.pack(side=LEFT, fill=X, expand=True)
+        self.removeButton = Button(insertRemoveFrame, text="Remove",
+                                   command=self._removePixels)
+        self.removeButton.pack(side=LEFT, fill=X, expand=True)
+        insertRemoveFrame.pack(side=TOP, fill=X)
+
+        self.trimButton = Button(toolbar, text="Auto Trim",
                                  command=self._trimEnd)
         self.trimButton.pack(side=TOP, fill=X)
 
@@ -114,6 +130,9 @@ class CompositeResizeApp:
 
     def _enableInterface(self):
         self.appendButton.config(state=NORMAL)
+        self.pixelsBox.config(state=NORMAL)
+        self.insertButton.config(state=NORMAL)
+        self.removeButton.config(state=NORMAL)
         self.trimButton.config(state=NORMAL)
         self.widthBox.config(state=NORMAL)
         self.paddingBox.config(state=NORMAL)
@@ -122,11 +141,52 @@ class CompositeResizeApp:
 
     def _disableInterface(self):
         self.appendButton.config(state=DISABLED)
+        self.pixelsBox.config(state=DISABLED)
+        self.insertButton.config(state=DISABLED)
+        self.removeButton.config(state=DISABLED)
         self.trimButton.config(state=DISABLED)
         self.widthBox.config(state=DISABLED)
         self.paddingBox.config(state=DISABLED)
         self.updateButton.config(state=DISABLED)
         self.saveButton.config(state=DISABLED)
+
+    def _readPixelsBox(self):
+        valid = True
+        try:
+            pixels = int(self.pixelsBox.get())
+        except BaseException:
+            valid = False
+        if pixels <= 0:
+            valid = False
+
+        if not valid:
+            self.pixelsBox.delete(0, END)
+            self.pixelsBox.insert(INSERT, widthStr)
+            return 0
+        else:
+            return pixels
+
+    def _insertPixels(self):
+        pixels = self._readPixelsBox()
+        if pixels == 0:
+            return
+        self.imageData += emptyBytes(pixels * modePixelSize(self.imageMode))
+        self.numPixels += pixels
+        self._updateImage()
+
+    def _removePixels(self):
+        pixels = self._readPixelsBox()
+        if pixels == 0:
+            return
+        if pixels >= self.numPixels:
+            messagebox.showerror("Can't remove pixels",
+                                 "Not enough pixels to remove")
+            return
+        self.numPixels -= pixels
+        self.imageData = \
+            self.imageData[ : self.numPixels * modePixelSize(self.imageMode)]
+
+        self._updateImage()
 
     def _trimEnd(self):
         pixelSize = modePixelSize(self.imageMode)
