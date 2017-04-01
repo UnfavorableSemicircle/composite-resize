@@ -86,6 +86,8 @@ class CompositeResizeApp:
 
         frame.pack()
 
+        root.bind('<Return>', self._updateImageEvent)
+
         self._updateImage()
 
     def _makeDividerFrame(self, root):
