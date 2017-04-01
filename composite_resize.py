@@ -30,43 +30,47 @@ class CompositeResizeApp:
 
         frame = Frame(root)
 
-        widthFrame = Frame(frame)
+        toolbar = Frame(frame)
 
-        loadButton = Button(widthFrame, text="Load Image",
+        loadButton = Button(toolbar, text="Load Image",
                             command=self._loadButtonClicked)
         loadButton.pack(side=LEFT)
         
-        self.appendButton = Button(widthFrame, text="Append Image",
+        self.appendButton = Button(toolbar, text="Append Image",
                                    command=self._appendButtonClicked)
         self.appendButton.pack(side=LEFT)
 
-        paddingLabel = Label(widthFrame, text="Padding: ")
+        self.trimButton = Button(toolbar, text="Trim End",
+                                 command=self._trimEnd)
+        self.trimButton.pack(side=LEFT)
+
+        paddingLabel = Label(toolbar, text="Padding: ")
         paddingLabel.pack(side=LEFT)
-        self.paddingBox = Spinbox(widthFrame, from_=0, to=65536)
+        self.paddingBox = Spinbox(toolbar, from_=0, to=65536)
         self.paddingBox.pack(side=LEFT)
         self.paddingBox.bind('<Return>', self._updateImageEvent)
         self.paddingBox.delete(0, END)
         self.paddingBox.insert(INSERT, '0')
         
-        widthLabel = Label(widthFrame, text="Width: ")
+        widthLabel = Label(toolbar, text="Width: ")
         widthLabel.pack(side=LEFT)
-        self.widthBox = Spinbox(widthFrame, from_=0, to=65536)
+        self.widthBox = Spinbox(toolbar, from_=0, to=65536)
         self.widthBox.pack(side=LEFT)
         self.widthBox.bind('<Return>', self._updateImageEvent)
         self._updateWidthBox()
 
-        self.updateButton = Button(widthFrame, text="Update",
+        self.updateButton = Button(toolbar, text="Update",
                                    command=self._updateImage)
         self.updateButton.pack(side=LEFT)
 
-        self.saveButton = Button(widthFrame, text="Save",
+        self.saveButton = Button(toolbar, text="Save",
                                  command=self._saveImage)
         self.saveButton.pack(side=LEFT)
 
-        #quitButton = Button(widthFrame, text="Quit", command=exit)
+        #quitButton = Button(toolbar, text="Quit", command=exit)
         #quitButton.pack(side=LEFT)
         
-        widthFrame.pack(side=TOP, fill="x")
+        toolbar.pack(side=TOP, fill="x")
 
         self.imageCanvas = Canvas(frame)
         self.imageCanvas.pack(side=TOP)
@@ -88,6 +92,30 @@ class CompositeResizeApp:
         self.paddingBox.config(state=DISABLED)
         self.updateButton.config(state=DISABLED)
         self.saveButton.config(state=DISABLED)
+
+    def _trimEnd(self):
+        pixelSize = modePixelSize(self.imageMode)
+        i = self.numPixels - 1
+        while i >= 0:
+            pixels = self.imageData[i*pixelSize:(i+1)*pixelSize]
+            black = True
+            for pixel in pixels:
+                if pixel != 0:
+                    black = False
+                    break
+            if not black:
+                break
+            i -= 1
+        i += 1
+        if i == self.numPixels:
+            messagebox.showinfo("Trim", "Nothing to trim")
+        else:
+            pixelsTrimmed = self.numPixels - i
+            self.imageData = self.imageData[:i*pixelSize]
+            self.numPixels = i
+            self._updateImage()
+            messagebox.showinfo("Trim",
+                "Trimmed " + str(pixelsTrimmed) + " pixels")
 
     def _updateWidthBox(self):
         prevState = self.widthBox['state']
@@ -160,8 +188,6 @@ class CompositeResizeApp:
             self.paddingBox.delete(0, END)
             self.paddingBox.insert(INSERT, '0')
             padding = 0
-
-        print("updating image")
         
         pixelBytes = modePixelSize(self.imageMode)
         if width % 1.0 == 0.0:
@@ -193,11 +219,13 @@ class CompositeResizeApp:
                                      imageData)
         
         self.imageCanvas.delete("all")
-        self.imageCanvas.config(width=self.image.width,
-                                height=self.image.height)
+        self.imageCanvas.config(width=self.image.width + 4,
+                                height=self.image.height + 4)
         self.photoImage = ImageTk.PhotoImage(self.image)
         self.imageSprite = self.imageCanvas.create_image(
-            self.image.width/2, self.image.height/2, image=self.photoImage)
+            self.image.width/2 + 2,
+            self.image.height/2 + 2,
+            image=self.photoImage)
         self.imageCanvas.update()
 
         self.width = width
